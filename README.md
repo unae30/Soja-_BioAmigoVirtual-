@@ -17,3 +17,4 @@ Requer npm, node e suas dependencias.
 - [Gemini API em aplicativos web](https://ai.google.dev/tutorials/web_quickstart)
 
 Obs.: Utilizei o sample web que recomenda na documentação para adaptar meu código.
+Melhorias são necessárias na aplicação.  
