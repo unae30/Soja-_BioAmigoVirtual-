@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="utils/main.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <title>PBF Consulta</title>
+  </head>
+
+  <body>
+    <header className="App-header">
+      <h1 className="titulo">&#127793; PBF - Soja! Consulta &#127793;</h1>
+      <h2 className="subtitulo">Encontre seu alimento ou restaurante desejado!</h2>
+    </header>
+    <div class="container">
+      <h2>Plant-based food</h2>
+      <p>O crescimento de alimentos à base de plantas, tanto no Brasil quanto no mundo,
+        se deve à crescente conscientização sobre saúde, meio ambiente e bem-estar animal,
+        combinada com a inovação que oferece produtos mais saborosos e acessíveis,
+        impulsionada por tendências globais como o veganismo e o investimento em tecnologias alimentares.</p>
+
+      <p>Embora a oferta de alimentos à base de plantas esteja crescendo,
+        o acesso a opções acessíveis ainda é um desafio para os consumidores.
+        Produtos industrializados, como hambúrgueres vegetais, frequentemente têm preços mais altos, e a
+        disponibilidade de opções saborosas e variadas em restaurantes fora de grandes centros urbanos ainda é limitada.
+        A rotulagem pouco clara de produtos industrializados e a escassez de opções em supermercados,
+        especialmente fora do eixo Rio-São Paulo, também dificultam a adesão à dieta à base de plantas.</p>
+
+      <h4>Para amenizar esses danos, conheça o Soja!, seu assistente virtual
+        que está sempre antenado nas questões ambientais.</h4>
+    </div>
+    <div class="container">
+      <h2 className="nome_soja">Soja! - ChatBot</h2>
+      <p>Soja! é bastante antenado à todos os assuntos do mundo, porém, ele é especialista
+        em encontrar produtos, restaurantes que contém alimentos à base de plantas.</p>
+      <p>Pergunte à ele onde tem aquele alimento ou ingrediente para um prato a base de plantas,
+        ou qual restaurante você conegue comer um prato específico ou não. Soja! além de te entregar nomes de restaurantes,
+        nomes de estabeleciemntos que contém algum produto, ele consegue te dizer preços, em média,
+        e até informações nutricionais de alimentos.</p>
+      <div id="chat-history"></div>
+    </div>
+    <div class="form-container">
+      <form id="form">
+        <input id="prompt" />
+        <button type="submit">Send</button>
+      </form>
+      <template id="thumb-template">
+        <img class="thumb" />
+      </template>
+    </div>
+
+    <script type="module">
+      import {
+        getGenerativeModel,
+        scrollToDocumentBottom,
+        updateUI,
+      } from "./utils/shared.js";
+
+      const promptInput = document.querySelector("#prompt");
+      const historyElement = document.querySelector("#chat-history");
+      let chat;
+
+      document
+        .querySelector("#form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          if (!chat) {
+            const model = await getGenerativeModel({ model: "gemini-pro" });
+            chat = model.startChat({
+              generationConfig: {
+                maxOutputTokens: 100,
+              },
+            });
+          }
+
+          const userMessage = promptInput.value;
+          promptInput.value = "";
+
+          // Create UI for the new user / assistant messages pair
+          historyElement.innerHTML += `<div class="history-item user-role">
+            <div class="name">User</div>
+            <blockquote>${userMessage}</blockquote>
+          </div>
+          <div class="history-item model-role">
+            <div class="name">Model</div>
+            <blockquote></blockquote>
+          </div>`;
+
+          scrollToDocumentBottom();
+          const resultEls = document.querySelectorAll(
+            ".model-role > blockquote",
+          );
+          await updateUI(
+            resultEls[resultEls.length - 1],
+            () => chat.sendMessageStream(userMessage),
+            true,
+          );
+        });
+    </script>
+  </body>
+</html>
